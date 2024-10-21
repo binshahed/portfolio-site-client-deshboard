@@ -1,16 +1,24 @@
 
+import { Outlet } from 'react-router-dom'
 import './App.css'
+import Sidebar from './components/layouts/Sidebar'
 import ProtectedRoute from './router/ProtectedRoute'
+
 
 function App() {
 
 
   return (
-    <ProtectedRoute>
-        <h1 className="text-3xl font-bold underline">
-      Hello world!
-    </h1>
-    </ProtectedRoute>
+    // <ProtectedRoute>
+   <div>
+    <Sidebar/>
+    
+    <div className='mx-[16%]'>
+    <Outlet/>
+    </div>
+    
+   </div>
+    // </ProtectedRoute>
   )
 }
 
