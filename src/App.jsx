@@ -9,7 +9,7 @@ function App() {
 
 
   return (
-    // <ProtectedRoute>
+    <ProtectedRoute>
    <div>
     <Sidebar/>
     
@@ -18,7 +18,7 @@ function App() {
     </div>
     
    </div>
-    // </ProtectedRoute>
+     </ProtectedRoute>
   )
 }
 
