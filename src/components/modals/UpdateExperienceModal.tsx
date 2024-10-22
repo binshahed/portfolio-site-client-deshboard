@@ -1,4 +1,11 @@
-import { Button, Label, Modal, TextInput, Textarea } from "flowbite-react";
+import {
+  Button,
+  Checkbox,
+  Label,
+  Modal,
+  TextInput,
+  Textarea
+} from "flowbite-react";
 import React, { useState } from "react";
 import { FaEdit } from "react-icons/fa";
 import { useUpdateExperienceMutation } from "../../store/app/features/Experience/experienceApi";
@@ -6,11 +13,15 @@ import { useUpdateExperienceMutation } from "../../store/app/features/Experience
 export function UpdateExperienceModal({ project }) {
   const [updateExperience, { isLoading }] = useUpdateExperienceMutation();
   const [openModal, setOpenModal] = useState(false);
+  const [currentlyWorking, setCurrentlyWorking] = useState(
+    project.endDate === "Present"
+  );
+
   const [formData, setFormData] = useState({
     companyName: project.companyName || "",
     designation: project.designation || "",
     startDate: project.startDate || "",
-    endDate: project.endDate || "",
+    endDate: project.endDate === "Present" ? "" : project.endDate || "",
     responsibilities: project.responsibilities || [],
     technologies: project.technologies || [],
     achievements: project.achievements || ""
@@ -44,6 +55,10 @@ export function UpdateExperienceModal({ project }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (currentlyWorking) {
+      formData.endDate = "Present";
+    }
+
     await updateExperience({ data: formData, id: project._id });
     setOpenModal(false); // Close the modal after submission
   };
@@ -93,14 +108,25 @@ export function UpdateExperienceModal({ project }) {
               />
             </div>
             <div className="mb-4">
+              <Label className="mr-2" htmlFor="currentlyWorking">
+                Currently working?
+              </Label>
+              <Checkbox
+                id="currentlyWorking"
+                checked={currentlyWorking}
+                onChange={(e) => setCurrentlyWorking(e.target.checked)}
+              />
+            </div>
+            <div className="mb-4">
               <Label htmlFor="endDate">End Date</Label>
               <TextInput
                 type="date"
                 id="endDate"
                 name="endDate"
-                value={formData.endDate}
+                value={currentlyWorking ? "" : formData.endDate}
                 onChange={handleChange}
-                required
+                disabled={currentlyWorking} // Disable input if currently working
+                required={!currentlyWorking} // Only required if not currently working
               />
             </div>
             <div className="mb-4">

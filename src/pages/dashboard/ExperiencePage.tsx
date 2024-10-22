@@ -57,9 +57,7 @@ const ExperiencePage = () => {
                 <td className="px-4 py-4 sm:px-6">
                   {new Date(experience?.startDate).toLocaleDateString()}
                 </td>
-                <td className="px-4 py-4 sm:px-6">
-                  {new Date(experience?.endDate).toLocaleDateString()}
-                </td>
+                <td className="px-4 py-4 sm:px-6">{experience?.endDate}</td>
                 <td className="px-4 py-4 sm:px-6">
                   <ul className="list-disc pl-5">
                     {experience?.responsibilities?.map(

@@ -32,7 +32,7 @@ const handleErrorResponse = (errorRes: TError) => {
 
 // Base query setup with token management and refresh logic
 const baseQuery = fetchBaseQuery({
-  baseUrl: "https://portfolio-site-server-phi.vercel.app/api",
+  baseUrl: "http://localhost:5000/api",
   credentials: "include",
 
   prepareHeaders: (headers, { getState }) => {
@@ -70,7 +70,7 @@ const BaseQueryWithRefreshToken: BaseQueryFn<
     try {
       // Attempt to refresh the token
       const res = await fetch(
-        "https://portfolio-site-server-phi.vercel.app/api/v1/auth/refresh-token",
+        "http://localhost:5000/api/v1/auth/refresh-token",
         {
           method: "POST",
           credentials: "include"
