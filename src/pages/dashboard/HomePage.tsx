@@ -3,6 +3,7 @@ import {
   useGetPersonalInfoQuery,
   useUpdatePersonalInfoMutation
 } from "../../store/app/features/personalInfo/personalInfoApi";
+import envConfig from "../../config";
 
 const HomePage = () => {
   const { data, isLoading, isError } = useGetPersonalInfoQuery(undefined);
@@ -12,7 +13,6 @@ const HomePage = () => {
   ] = useUpdatePersonalInfoMutation();
   const userInfo = data?.data;
 
-  // Initialize state with default values
   const [formValues, setFormValues] = useState({
     name: "",
     title: "",
@@ -20,7 +20,6 @@ const HomePage = () => {
     bio: "",
     aboutMe: "",
     contact: {
-      // Nesting contact fields here
       email: "",
       phone: "",
       address: "",
@@ -28,9 +27,11 @@ const HomePage = () => {
     }
   });
 
+  const [imagePreview, setImagePreview] = useState("");
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+
   useEffect(() => {
     if (userInfo) {
-      // Update form values only when userInfo is available
       setFormValues({
         name: userInfo.name || "",
         title: userInfo.title || "",
@@ -38,26 +39,24 @@ const HomePage = () => {
         bio: userInfo.bio || "",
         aboutMe: userInfo.aboutMe || "",
         contact: {
-          // Updating nested contact fields
           email: userInfo.contact?.email || "",
           phone: userInfo.contact?.phone || "",
           address: userInfo.contact?.address || "",
           github: userInfo.contact?.github || ""
         }
       });
+      setImagePreview(userInfo.profilePicture || "");
     }
-  }, [userInfo]); // Run effect when userInfo changes
+  }, [userInfo]);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
     if (id in formValues) {
-      // Update fields in the main formValues object
       setFormValues((prevValues) => ({
         ...prevValues,
         [id]: value
       }));
     } else {
-      // Update fields in the nested contact object
       setFormValues((prevValues) => ({
         ...prevValues,
         contact: {
@@ -68,16 +67,57 @@ const HomePage = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setImagePreview(reader?.result as any);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload image to ImageBB
+      uploadImageToImageBB(file);
+    }
+  };
+
+  const uploadImageToImageBB = async (file) => {
+    setIsUploadingImage(true);
+
+    const formData = new FormData();
+    formData.append("image", file);
+
+    try {
+      const res = await fetch(
+        `https://api.imgbb.com/1/upload?key=${envConfig.imageBB}`,
+        {
+          method: "POST",
+          body: formData
+        }
+      );
+      const result = await res.json();
+      const imageUrl = result.data.url;
+
+      // Update formValues with the image URL
+      setFormValues((prevValues) => ({
+        ...prevValues,
+        profilePicture: imageUrl
+      }));
+
+      setIsUploadingImage(false);
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      setIsUploadingImage(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Call the mutation to update the personal info
       await updatePersonalInfo(formValues).unwrap();
       console.log("Form submitted successfully:", formValues);
-      // Optionally reset the form or show a success message
     } catch (error) {
       console.error("Error updating personal information:", error);
-      // Optionally show an error message
     }
   };
 
@@ -85,32 +125,24 @@ const HomePage = () => {
     <div className="max-w-4xl mx-auto py-10">
       <h2 className="font-bold text-2xl my-5 text-center">Home Page</h2>
 
-      {/* Handle loading state */}
       {isLoading && (
         <div className="text-center text-blue-600 font-semibold">
           Loading user information...
         </div>
       )}
 
-      {/* Handle error state */}
       {isError && (
         <div className="text-center text-red-600 font-semibold">
           Error loading data: {"Something went wrong!"}
         </div>
       )}
 
-      {/* Show the form only if we have user data */}
       {userInfo && (
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white p-6 rounded-lg shadow-md"
-        >
+        <form onSubmit={handleSubmit} className="bg-white p-6 rounded-lg shadow-md">
           <div className="grid gap-6 mb-6 md:grid-cols-2">
+            {/* Name */}
             <div>
-              <label
-                htmlFor="name"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="name" className="block mb-2 text-sm font-medium text-gray-900">
                 Name
               </label>
               <input
@@ -122,11 +154,9 @@ const HomePage = () => {
               />
             </div>
 
+            {/* Title */}
             <div>
-              <label
-                htmlFor="title"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="title" className="block mb-2 text-sm font-medium text-gray-900">
                 Title
               </label>
               <input
@@ -138,27 +168,33 @@ const HomePage = () => {
               />
             </div>
 
+            {/* Profile Picture */}
             <div>
-              <label
-                htmlFor="profilePicture"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
-                Profile Picture URL
+              <label htmlFor="profilePicture" className="block mb-2 text-sm font-medium text-gray-900">
+                Profile Picture
               </label>
               <input
-                type="text"
+                type="file"
                 id="profilePicture"
-                value={formValues.profilePicture}
-                onChange={handleInputChange}
+                onChange={handleImageChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               />
+              {/* Preview */}
+              {imagePreview && (
+                <img
+                  src={imagePreview}
+                  alt="Profile Preview"
+                  className="mt-4 w-32 h-32 rounded-full object-cover"
+                />
+              )}
+              {isUploadingImage && (
+                <p className="text-blue-600 font-semibold mt-2">Uploading image...</p>
+              )}
             </div>
 
+            {/* Bio */}
             <div>
-              <label
-                htmlFor="bio"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="bio" className="block mb-2 text-sm font-medium text-gray-900">
                 Bio
               </label>
               <textarea
@@ -170,11 +206,9 @@ const HomePage = () => {
               />
             </div>
 
+            {/* About Me */}
             <div>
-              <label
-                htmlFor="aboutMe"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="aboutMe" className="block mb-2 text-sm font-medium text-gray-900">
                 About Me
               </label>
               <textarea
@@ -186,65 +220,57 @@ const HomePage = () => {
               />
             </div>
 
+            {/* Email */}
             <div>
-              <label
-                htmlFor="email"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="email" className="block mb-2 text-sm font-medium text-gray-900">
                 Email
               </label>
               <input
                 type="email"
                 id="email"
-                value={formValues.contact.email} // Access nested value
+                value={formValues.contact.email}
                 onChange={handleInputChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               />
             </div>
 
+            {/* Phone */}
             <div>
-              <label
-                htmlFor="phone"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="phone" className="block mb-2 text-sm font-medium text-gray-900">
                 Phone
               </label>
               <input
                 type="tel"
                 id="phone"
-                value={formValues.contact.phone} // Access nested value
+                value={formValues.contact.phone}
                 onChange={handleInputChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               />
             </div>
 
+            {/* GitHub */}
             <div>
-              <label
-                htmlFor="github"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="github" className="block mb-2 text-sm font-medium text-gray-900">
                 GitHub
               </label>
               <input
                 type="text"
                 id="github"
-                value={formValues.contact.github} // Access nested value
+                value={formValues.contact.github}
                 onChange={handleInputChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               />
             </div>
 
+            {/* Address */}
             <div>
-              <label
-                htmlFor="address"
-                className="block mb-2 text-sm font-medium text-gray-900"
-              >
+              <label htmlFor="address" className="block mb-2 text-sm font-medium text-gray-900">
                 Address
               </label>
               <input
                 type="text"
                 id="address"
-                value={formValues.contact.address} // Access nested value
+                value={formValues.contact.address}
                 onChange={handleInputChange}
                 className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5"
               />
@@ -254,12 +280,11 @@ const HomePage = () => {
           <button
             type="submit"
             className="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center"
-            disabled={isUpdating} // Disable button while updating
+            disabled={isUpdating || isUploadingImage}
           >
-            {isUpdating ? "Updating..." : "Submit"}
+            {isUpdating || isUploadingImage ? "Updating..." : "Submit"}
           </button>
 
-          {/* Show error message if update fails */}
           {isUpdateError && (
             <div className="text-red-600 font-semibold mt-4">
               Error updating information: {"Something went wrong!"}

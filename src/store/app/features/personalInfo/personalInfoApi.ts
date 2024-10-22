@@ -5,7 +5,7 @@ const personalInfoApi = baseApi.injectEndpoints({
     getPersonalInfo: builder.query({
       query: () => ({
         url: "/personalInfo",
-        method: "get"
+        method: "GET"
       })
     }),
     updatePersonalInfo: builder.mutation({

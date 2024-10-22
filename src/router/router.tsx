@@ -1,28 +1,19 @@
 import React from "react";
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import App from "../App";
 import SignIn from "../pages/SignIn";
 import PublicRoute from "./PublicRoute";
 import HomePage from "../pages/dashboard/HomePage";
+import { sidebarItems } from "../components/layouts/sidebarItems";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    children: [
-      {
-        path: "/",
-        element: <HomePage />
-      },
-      {
-        path: "/about",
-        element: <div>About Page</div>
-      },
-      {
-        path: "/contact",
-        element: <div>Contact Page</div>
-      }
-    ]
+    children: sidebarItems?.map((item) => ({
+      path: item?.to,
+      element: item?.element
+    }))
   },
   {
     path: "/sign-in",
@@ -31,6 +22,10 @@ const router = createBrowserRouter([
         <SignIn />
       </PublicRoute>
     )
+  },
+  {
+    path: "*",
+    element: <Navigate to="/" replace={true} />
   }
 ]);
 

@@ -4,6 +4,7 @@ import { TiThMenu } from "react-icons/ti";
 import { IoIosLogOut, IoMdClose } from "react-icons/io";
 import { useAppDispatch } from "../../store/hooks";
 import { logout } from "../../store/app/features/auth/authSlice";
+import { sidebarItems } from "./sidebarItems";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -61,22 +62,16 @@ const Sidebar = () => {
         </button>
         <div className="py-4 overflow-y-auto">
           <ul className="space-y-2 font-medium">
-            <li>
-              <Link
-                to="/"
-                className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
-              >
-                <span className="ms-3">Dashboard</span>
-              </Link>
-            </li>
-            <li>
-              <Link
-                to="about"
-                className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
-              >
-                <span className="ms-3">about</span>
-              </Link>
-            </li>
+            {sidebarItems?.map((item) => (
+              <li key={item?.title}>
+                <Link
+                  to={item?.to}
+                  className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-gray-100 group"
+                >
+                  <span className="ms-3">{item?.title}</span>
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
       </div>
