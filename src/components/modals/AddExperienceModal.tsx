@@ -17,6 +17,7 @@ interface FormData {
 export function AddExperienceModal() {
   const [addExperience, { data, isLoading }] = useAddExperienceMutation(); // Ensure this mutation is implemented
   const [openModal, setOpenModal] = useState(false);
+  const [currentlyWorking, setCurrentlyWorking] = useState(false);
 
   // Initialize formData with the defined type
   const [formData, setFormData] = useState<FormData>({
@@ -127,6 +128,7 @@ export function AddExperienceModal() {
                 name="endDate"
                 value={formData.endDate}
                 onChange={handleChange}
+                disabled={currentlyWorking}
                 required
               />
             </div>
