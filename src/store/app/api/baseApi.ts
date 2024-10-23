@@ -32,7 +32,7 @@ const handleErrorResponse = (errorRes: TError) => {
 
 // Base query setup with token management and refresh logic
 const baseQuery = fetchBaseQuery({
-  baseUrl: "http://localhost:5000/api",
+  baseUrl: "https://portfolio-site-server-phi.vercel.app/api",
   credentials: "include",
 
   prepareHeaders: (headers, { getState }) => {
